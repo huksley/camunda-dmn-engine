@@ -3,7 +3,7 @@
 Repackagement of various projects from (camunda|http://camunda.org)
 for using DMN engine in other projects.
 
-## Warning!
+## Source
 
 This project does host any code. 
 All sources is downloaded and all changes made at the build phase.
@@ -15,10 +15,9 @@ This project compiles in following projects:
  * camunda-commons
  * camunda-xml-model
 
-Usage:
+## Usage
 
-<code bash>
-> pull
-> ant repackage
-> mvn package
-</code>
+  > pull
+  > ant repackage
+  > mvn package
+  
