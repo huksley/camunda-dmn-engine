@@ -18,6 +18,8 @@ This project compiles in following projects:
 ## Usage
 
    > pull
+   
    > ant repackage
+   
    > mvn package
   
