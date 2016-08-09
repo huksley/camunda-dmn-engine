@@ -11,9 +11,11 @@
 
 	<target name="repackage">
 		<property name="target" value="src/main/java"/>
+		<property name="target.res" value="src/main/resources"/>
 		<delete dir="src"/>
 		<delete file="replace.conf"/>
-		<mkdir dir="src/main/java"/>
+		<mkdir dir="${target}"/>
+		<mkdir dir="${target.res}"/>
 
 		<foreach param="repackage.file" target="repackage.one" inheritall="true" parallel="false">
 			<path>
@@ -69,6 +71,14 @@
 		    <filterchain>
     		    <replacestring from="${from}" to="${to}"/>
 		    </filterchain>
+		</copy>
+
+		<copy todir="${target.res}" failonerror="false">
+			<fileset dir="${base}/${src.dir}/../resources">
+	    	    <exclude name="**/*.java"/>
+	    	    <exclude name="**/*.MF"/>
+	    	    <exclude name="**/*.mf"/>
+		    </fileset>
 		</copy>
 
 		<propertyfile file="replace.conf">
