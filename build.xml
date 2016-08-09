@@ -1,0 +1,78 @@
+<project default="repackage">
+	<property environment="env"/>
+
+	<path id="tasks.classpath">
+		<fileset dir=".">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="tasks.classpath" />
+
+	<target name="repackage">
+		<property name="target" value="src/main/java"/>
+		<delete dir="src"/>
+		<delete file="replace.conf"/>
+		<mkdir dir="src/main/java"/>
+
+		<foreach param="repackage.file" target="repackage.one" inheritall="true" parallel="false">
+			<path>
+				<fileset dir=".">
+					<include name="*.properties"/>
+				</fileset>
+			</path>
+		</foreach>
+
+		<property file="replace.conf"/>
+		<propertyselector property="replacements" match="replace\.(.*)$" select="\1" delimiter=", "/>
+		<echo message="Packages to replace: ${replacements}"/>
+		<foreach param="replacement" list="${replacements}" target="replace.one" delimiter=",; "  inheritall="true" parallel="false"/>		
+		<delete file="replace.conf"/>
+	</target>
+
+	<target name="replace.one">
+		<property name="from" value="${replacement}"/>
+		<propertycopy property="to" from="replace.${replacement}"/>
+		<echo message="Replacing ${from} => ${to} in all files in ${target}"/>
+		<replace dir="${target}" encoding="UTF-8" token="${from}" value="${to}"/>
+	</target>
+
+	<target name="repackage.one">
+		<property file="${repackage.file}"/>
+		<basename property="base" file="${repackage.file}" suffix=".properties"/>
+		<fail unless="projects" message="Property projects must be set"/>
+		<echo message="Repacking project ${base} according to rules in ${repackage.file}"/>
+		<foreach param="project" list="${projects}" target="project.one" delimiter=",; " inheritall="true" parallel="false"/>
+	</target>
+
+	<target name="project.one">
+		<propertycopy name="src.dir" from="${project}.src.dir" silent="true"/>
+		<property name="src.dir" value="${project}/src/main/java"/>		
+		<propertycopy property="from" from="${project}.from" silent="true" override="true"/>
+		<propertycopy property="to" from="${project}.to" silent="true" override="true"/>
+		<fail unless="from" message="Property from must be set"/>
+		<fail unless="to" message="Property to must be set"/>
+		<propertyregex property="from.dir" input="${from}" regexp="\." replace="/" global="true" />
+		<propertyregex property="to.dir" input="${to}" regexp="\." replace="/" global="true" />
+		<echo message="Processing sources in ${base}/${src.dir} (${from} => ${to}, ${from.dir} => ${to.dir})"/>
+
+		<copy todir="${target}">
+		    <fileset dir="${base}/${src.dir}">
+	    	    <include name="**/*.java"/>
+		    </fileset>
+			<compositemapper>
+				<filtermapper>
+					<replacestring from="\" to="/"/>
+					<replacestring from="${from.dir}" to="${to.dir}"/>
+				</filtermapper>
+			</compositemapper>
+		    <filterchain>
+    		    <replacestring from="${from}" to="${to}"/>
+		    </filterchain>
+		</copy>
+
+		<propertyfile file="replace.conf">
+			<entry key="replace.${from}" value="${to}"/>
+		</propertyfile>
+	</target>
+</project>
